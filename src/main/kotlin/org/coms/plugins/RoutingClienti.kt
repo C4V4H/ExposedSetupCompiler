@@ -21,21 +21,21 @@ fun Application.clienti() {
             post {
                 val formParameters = call.receiveParameters()
                 val cliente = dao.add(
-                    cognome = formParameters.getOrFail("cognome"),
-                    nome = formParameters.getOrFail("nome"),
-                    indirizzo = formParameters.getOrFail("indirizzo"),
-                    citta = formParameters.getOrFail("citta"),
-                    provincia = formParameters.getOrFail("provincia"),
-                    cap = formParameters.getOrFail("cap"),
-                    nazione = formParameters.getOrFail("nazione"),
-                    mail = formParameters.getOrFail("mail"),
-                    telefono = formParameters.getOrFail("telefono"),
-                    partitaIva = formParameters.getOrFail("partitaIva"),
-                    codiceFiscale = formParameters.getOrFail("codiceFiscale"),
-                    idUtente = formParameters.getOrFail("idUtente").toInt(),
-                    idAzienda = formParameters.getOrFail("idAzienda").toInt(),
-
-                    )
+                    cognome = formParameters.getOrFail("cognome"), 
+		nome = formParameters.getOrFail("nome"), 
+		indirizzo = formParameters.getOrFail("indirizzo"), 
+		citta = formParameters.getOrFail("citta"), 
+		provincia = formParameters.getOrFail("provincia"), 
+		cap = formParameters.getOrFail("cap"), 
+		nazione = formParameters.getOrFail("nazione"), 
+		mail = formParameters.getOrFail("mail"), 
+		telefono = formParameters.getOrFail("telefono"), 
+		partitaIva = formParameters.getOrFail("partitaIva"), 
+		codiceFiscale = formParameters.getOrFail("codiceFiscale"), 
+		idUtente = formParameters.getOrFail("idUtente").toInt(), 
+		idAzienda = formParameters.getOrFail("idAzienda").toInt(), 
+		
+                )
                 call.respondRedirect("/clienti/" + cliente?.id)
             }
             //Get per prendere un Cliente specifico con la PK
@@ -50,25 +50,24 @@ fun Application.clienti() {
                 when (formParameters.getOrFail("_action")) {
                     "update" -> {
                         dao.edit(
-                            id = formParameters.getOrFail("id").toInt(),
-                            cognome = formParameters.getOrFail("cognome"),
-                            nome = formParameters.getOrFail("nome"),
-                            indirizzo = formParameters.getOrFail("indirizzo"),
-                            citta = formParameters.getOrFail("citta"),
-                            provincia = formParameters.getOrFail("provincia"),
-                            cap = formParameters.getOrFail("cap"),
-                            nazione = formParameters.getOrFail("nazione"),
-                            mail = formParameters.getOrFail("mail"),
-                            telefono = formParameters.getOrFail("telefono"),
-                            partitaIva = formParameters.getOrFail("partitaIva"),
-                            codiceFiscale = formParameters.getOrFail("codiceFiscale"),
-                            idUtente = formParameters.getOrFail("idUtente").toInt(),
-                            idAzienda = formParameters.getOrFail("idAzienda").toInt(),
-
-                            )
+                        id = formParameters.getOrFail("id").toInt(),
+                            cognome = formParameters.getOrFail("cognome"), 
+		nome = formParameters.getOrFail("nome"), 
+		indirizzo = formParameters.getOrFail("indirizzo"), 
+		citta = formParameters.getOrFail("citta"), 
+		provincia = formParameters.getOrFail("provincia"), 
+		cap = formParameters.getOrFail("cap"), 
+		nazione = formParameters.getOrFail("nazione"), 
+		mail = formParameters.getOrFail("mail"), 
+		telefono = formParameters.getOrFail("telefono"), 
+		partitaIva = formParameters.getOrFail("partitaIva"), 
+		codiceFiscale = formParameters.getOrFail("codiceFiscale"), 
+		idUtente = formParameters.getOrFail("idUtente").toInt(), 
+		idAzienda = formParameters.getOrFail("idAzienda").toInt(), 
+		
+                        )
                         call.respondRedirect("/clienti/$id")
                     }
-
                     "delete" -> {
                         call.respondText(if (dao.delete(id)) "succes" else "failed")
                     }

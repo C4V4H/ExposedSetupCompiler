@@ -25,20 +25,20 @@ class DAOFacade${tableName}Impl : DAOFacade$tableName {
         ${listAttributesForResultRow()}
     )
     
-    override suspend fun all(): List<$dataClassName> = DatabaseSingleton.dbQuery {
+    override suspend fun all(): List<$dataClassName> = org.coms.dao.DatabaseSingleton.dbQuery {
         ${tableName}.selectAll().map(::resultRowToModel)
     }
     
-    override suspend fun get(${primaryKey.name}: ${primaryKey.type.kotlinType}): $dataClassName? = DatabaseSingleton.dbQuery {
+    override suspend fun get(${primaryKey.name}: ${primaryKey.type.kotlin}): $dataClassName? = org.coms.dao.DatabaseSingleton.dbQuery {
         $tableName
-            .select { $tableName.${primaryKey.name} eq ${primaryKey.name} }
+            .selectAll().where {  $tableName.${primaryKey.name} eq ${primaryKey.name} }
             .map(::resultRowToModel)
             .singleOrNull()
     }
     
     override suspend fun add(
         ${getAttributesForParam()}
-    ): ${dataClassName}? = DatabaseSingleton.dbQuery {
+    ): ${dataClassName}? = org.coms.dao.DatabaseSingleton.dbQuery {
         val insertStatement = $tableName.insert {
             ${listAttributesForQuery()}
         }
@@ -47,16 +47,16 @@ class DAOFacade${tableName}Impl : DAOFacade$tableName {
     
     
     override suspend fun edit(
-        ${primaryKey.name}: ${primaryKey.type.kotlinType},
+        ${primaryKey.name}: ${primaryKey.type.kotlin},
         ${getAttributesForParam()}
-    ): Boolean = DatabaseSingleton.dbQuery {
+    ): Boolean = org.coms.dao.DatabaseSingleton.dbQuery {
         $tableName.update({ $tableName.${primaryKey.name} eq ${primaryKey.name} }) {
             it[$tableName.${primaryKey.name}] = ${primaryKey.name}
             ${listAttributesForQuery()}
         } > 0
     }
     
-    override suspend fun delete(${primaryKey.name}: ${primaryKey.type.kotlinType}): Boolean = DatabaseSingleton.dbQuery {
+    override suspend fun delete(${primaryKey.name}: ${primaryKey.type.kotlin}): Boolean = org.coms.dao.DatabaseSingleton.dbQuery {
         $tableName.deleteWhere { $tableName.${primaryKey.name} eq ${primaryKey.name} } > 0
     }
 }
@@ -80,11 +80,11 @@ val dao$tableName: DAOFacade$tableName = DAOFacade${tableName}Impl().apply {
     private fun listAttributesForQuery(): String {
         val str = StringBuilder("")
 
-        attributes.forEach { (name, type) ->
+        attributes.forEach { (name, _) ->
             str.append("it[$tableName.$name] = $name\n\t\t")
         }
-        references.forEach { (attribute, reference) ->
-            str.append("it[$tableName.${attribute.name}] = ${attribute.name}\n\t\t")
+        references.forEach { (name, _, _) ->
+            str.append("it[$tableName.${name}] = ${name}\n\t\t")
         }
 
         return str.toString()
@@ -94,10 +94,10 @@ val dao$tableName: DAOFacade$tableName = DAOFacade${tableName}Impl().apply {
         val str = StringBuilder("")
 
         attributes.forEach { (name, type) ->
-            str.append("$name: ${type.kotlinType},\n\t\t")
+            str.append("$name: ${type.kotlin},\n\t\t")
         }
-        references.forEach { (name, type) ->
-            str.append("${name.name}: ${name.type.kotlinType},\n\t\t")
+        references.forEach { (name, type, _) ->
+            str.append("${name}: ${type.kotlin},\n\t\t")
         }
 
         return str.toString()
@@ -110,11 +110,11 @@ val dao$tableName: DAOFacade$tableName = DAOFacade${tableName}Impl().apply {
         str.append(
             "${primaryKey.name} = row[$tableName.${primaryKey.name}], \n\t\t"
         )
-        attributes.forEach { (name, type) ->
+        attributes.forEach { (name, _) ->
             str.append("$name = row[$tableName.$name], \n\t\t")
         }
-        references.forEach { (attribute, type) ->
-            str.append("${attribute.name} = row[$tableName.${attribute.name}], \n\t\t")
+        references.forEach { (name, _, _) ->
+            str.append("$name = row[$tableName.${name}], \n\t\t")
         }
 
         return str.toString()

@@ -6,7 +6,7 @@ class ModelClassGenerator(
     private val tableName: String,
     private val attributes: Array<Attribute>,
     private val references: Array<Reference>,
-    private val primaryKey: Attribute = "id" to DataType.INTEGER
+    private val primaryKey: Attribute = "id" to INTEGER
 ) {
 
     fun generateClassContent(): String {
@@ -31,11 +31,11 @@ object $tableName : Table() {
 
 interface DAOFacade$tableName {
     suspend fun all(): List<$dataClassName>
-    suspend fun get(${primaryKey.name}: ${primaryKey.type.kotlinType}): $dataClassName?
+    suspend fun get(${primaryKey.name}: ${primaryKey.type.kotlin}): $dataClassName?
     suspend fun add($attributi): $dataClassName?
-    suspend fun edit(${primaryKey.name}: ${primaryKey.type.kotlinType},
+    suspend fun edit(${primaryKey.name}: ${primaryKey.type.kotlin},
         $attributi): Boolean
-    suspend fun delete(${primaryKey.name}: ${primaryKey.type.kotlinType}): Boolean
+    suspend fun delete(${primaryKey.name}: ${primaryKey.type.kotlin}): Boolean
 }
 """.trimIndent()
         )
@@ -49,14 +49,14 @@ interface DAOFacade$tableName {
 
         str.append(
             "var ${primaryKey.name}: ${
-                primaryKey.type.kotlinType
+                primaryKey.type.kotlin
             }, \n\t\t"
         )
         attributes.forEach { (name, type) ->
-            str.append("var $name: ${type.kotlinType}, \n\t\t")
+            str.append("var $name: ${type.kotlin}, \n\t\t")
         }
-        references.forEach { (attribute, reference) ->
-            str.append("var ${attribute.name}: ${attribute.type.kotlinType}, \n\t\t")
+        references.forEach { (name, type, _) ->
+            str.append("var $name: ${type.kotlin}, \n\t\t")
         }
 
         return str.toString()
@@ -66,10 +66,10 @@ interface DAOFacade$tableName {
         val str = StringBuilder("")
 
         attributes.forEach { (name, type) ->
-            str.append("$name: ${type.kotlinType}, \n\t\t")
+            str.append("$name: ${type.kotlin}, \n\t\t")
         }
-        references.forEach { (attribute, reference) ->
-            str.append("${attribute.name}: ${attribute.type.kotlinType}, \n\t\t")
+        references.forEach { (name, type, _) ->
+            str.append("$name: ${type.kotlin}, \n\t\t")
         }
 
         return str.toString()
@@ -85,8 +85,8 @@ interface DAOFacade$tableName {
         attributes.forEach {
             str.append("val ${it.name} = ${getExposedType(it)}\n\t\t")
         }
-        references.forEach { (attribute, reference) ->
-            str.append("val ${attribute.name} = reference(\"${attribute.name}\", ${reference})\n\t\t")
+        references.forEach { (name, _, reference) ->
+            str.append("val $name = reference(\"${name}\", ${reference})\n\t\t")
         }
 
         return str.append("override val primaryKey = PrimaryKey(${primaryKey.name})").toString()
@@ -94,9 +94,9 @@ interface DAOFacade$tableName {
 
     private fun getExposedType(attr: Attribute): String {
         if (attr.type == STRING)
-            return "varchar(\"${attr.name}\", ${attr.type.exposedType.replace("varchar(", "").replace(")", "")})"
+            return "varchar(\"${attr.name}\", ${attr.type.exposed.replace("varchar(", "").replace(")", "")})"
 
-        return "${attr.type.exposedType}(\"${attr.name}\")"
+        return "${attr.type.exposed}(\"${attr.name}\")"
     }
 }
 

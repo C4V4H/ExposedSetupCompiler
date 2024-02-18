@@ -1,0 +1,98 @@
+[
+    {
+        "dataClassName": "Cliente",
+        "tableName": "Clienti",
+        "attributes": [
+            {
+                "name": "cognome",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "nome",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "indirizzo",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "citta",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "provincia",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "cap",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "nazione",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "mail",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "telefono",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "partitaIva",
+                "type": "varchar(100)"
+            },
+            {
+                "name": "codiceFiscale",
+                "type": "varchar(100)"
+            }
+        ],
+        "references": [
+            {
+                "name": "idUtente",
+                "type": "INTEGER",
+                "reference": "Utenti.id"
+            },
+            {
+                "name": "idAzienda",
+                "type": "INTEGER",
+                "reference": "Aziende.id"
+            }
+        ],
+        "primaryKey": {
+            "name": "id",
+            "type": "INTEGER"
+        }
+    },
+    {
+        "dataClassName": "Azienda",
+        "tableName": "Aziende",
+        "attributes": [
+            {
+                "name": "nome",
+                "type": "varchar(100)"
+            }
+        ],
+        "references": [],
+        "primaryKey": {
+            "name": "id",
+            "type": "INTEGER"
+        }
+    },
+    {
+        "dataClassName": "Utente",
+        "tableName": "Utenti",
+        "attributes": [
+            {
+                "name": "mail",
+                "type": "varchar(100)"
+            }
+        ],
+        "references": [],
+        "primaryKey": {
+            "name": "id",
+            "type": "INTEGER"
+        }
+    }
+]

@@ -1,9 +1,46 @@
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.module.SimpleModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 import java.io.FileWriter
 
-class DAOCompiler(private var packageName: String = "org/coms") {
+class DAOCompiler(private var packageName: String = "org/example") {
 
-    fun createDir(path: String, nome: String) {
+    fun build(jsonPath: String) {
+        val tablesJsonFile = File(jsonPath)
+        val objectMapper = ObjectMapper()
+        val module = SimpleModule()
+        module.addDeserializer(DataType::class.java, DataTypeDeserializer())
+        objectMapper.registerModule(module)
+
+        val tableInfos: Array<TableInfo> = objectMapper.readValue(tablesJsonFile)
+        // Passaggio dei dati alla funzione
+        processTableInfos(tableInfos)
+
+        tableInfos.forEach {
+            setUpEnviroment(it)
+        }
+    }
+
+    private fun processTableInfos(tableInfos: Array<TableInfo>) {
+        // Qui puoi implementare la logica per elaborare le informazioni della tabella
+        tableInfos.forEach { tableInfo ->
+            println("Data Class Name: ${tableInfo.dataClassName}")
+            println("Table Name: ${tableInfo.tableName}")
+            println("Attributes:")
+            tableInfo.attributes.forEach { attribute ->
+                println("  ${attribute.name}: ${attribute.type.kotlin}")
+            }
+            println(if (tableInfo.references.isNotEmpty()) "References:" else "")
+            tableInfo.references.forEach { reference ->
+                println("  Attribute: ${reference.name}, Reference: ${reference.reference}")
+            }
+            println()
+        }
+    }
+
+
+    private fun createDir(path: String, nome: String) {
         val folder = File(path, nome)
         if (!folder.exists()) {
             folder.mkdirs()
@@ -12,7 +49,7 @@ class DAOCompiler(private var packageName: String = "org/coms") {
             println("La cartella esiste già: ${folder.absolutePath}")
     }
 
-    fun createAndWriteFile(path: String, nome: String, content: String) {
+    private fun createAndWriteFile(path: String, nome: String, content: String) {
         val file = File(path, nome)
         FileWriter(file).use { writer ->
             writer.write(content)
@@ -20,12 +57,8 @@ class DAOCompiler(private var packageName: String = "org/coms") {
         println("File creato e scritto con successo: ${file.absolutePath}")
     }
 
-    fun setUpEnviroment(
-        dataClassName: String,
-        tableName: String,
-        attributes: Array<Attribute>,
-        references: Array<Reference>,
-        primaryKey: Attribute = Attribute("id", DataType.INTEGER)
+    private fun setUpEnviroment(
+        tableInfo: TableInfo
     ) {
         val path = "src/main/kotlin/$packageName"
         createDir(path, "models")
@@ -33,40 +66,40 @@ class DAOCompiler(private var packageName: String = "org/coms") {
         createDir(path, "dao")
 
         val modelClass = ModelClassGenerator(
-            dataClassName = dataClassName,
-            tableName = tableName,
-            attributes = attributes,
-            references = references,
-            primaryKey = primaryKey
+            dataClassName = tableInfo.dataClassName,
+            tableName = tableInfo.tableName,
+            attributes = tableInfo.attributes,
+            references = tableInfo.references,
+            primaryKey = tableInfo.primaryKey
         )
         val daoClass = DaoMethodGenerator(
-            dataClassName = dataClassName,
-            tableName = tableName,
-            attributes = attributes,
-            references = references,
-            primaryKey = primaryKey
+            dataClassName = tableInfo.dataClassName,
+            tableName = tableInfo.tableName,
+            attributes = tableInfo.attributes,
+            references = tableInfo.references,
+            primaryKey = tableInfo.primaryKey
         )
         val routing = RoutingGenerator(
-            dataClassName = dataClassName,
-            tableName = tableName,
-            attributes = attributes,
-            references = references,
-            primaryKey = primaryKey
+            dataClassName = tableInfo.dataClassName,
+            tableName = tableInfo.tableName,
+            attributes = tableInfo.attributes,
+            references = tableInfo.references,
+            primaryKey = tableInfo.primaryKey
         )
 
         createAndWriteFile(
             "src/main/kotlin/org/coms/models",
-            "$dataClassName.kt",
+            "${tableInfo.dataClassName}.kt",
             modelClass.generateClassContent()
         )
         createAndWriteFile(
             "src/main/kotlin/org/coms/dao",
-            "DAOFacade${tableName}Impl.kt",
+            "DAOFacade${tableInfo.tableName}Impl.kt",
             daoClass.generateClassContent()
         )
         createAndWriteFile(
             "src/main/kotlin/org/coms/plugins",
-            "Routing${tableName}.kt",
+            "Routing${tableInfo.tableName}.kt",
             routing.generateClassContent()
         )
     }

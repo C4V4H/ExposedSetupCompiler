@@ -33,7 +33,7 @@ class DAOFacadeClientiImpl : DAOFacadeClienti {
 
     override suspend fun get(id: Int): Cliente? = DatabaseSingleton.dbQuery {
         Clienti
-            .select { Clienti.id eq id }
+            .selectAll().where { Clienti.id eq id }
             .map(::resultRowToModel)
             .singleOrNull()
     }

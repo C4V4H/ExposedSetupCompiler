@@ -21,9 +21,9 @@ fun Application.utenti() {
             post {
                 val formParameters = call.receiveParameters()
                 val utente = dao.add(
-                    mail = formParameters.getOrFail("mail"), 
-		
-                )
+                    mail = formParameters.getOrFail("mail"),
+
+                    )
                 call.respondRedirect("/utenti/" + utente?.id)
             }
             //Get per prendere un Utente specifico con la PK
@@ -38,12 +38,13 @@ fun Application.utenti() {
                 when (formParameters.getOrFail("_action")) {
                     "update" -> {
                         dao.edit(
-                        id = formParameters.getOrFail("id").toInt(),
-                            mail = formParameters.getOrFail("mail"), 
-		
-                        )
+                            id = formParameters.getOrFail("id").toInt(),
+                            mail = formParameters.getOrFail("mail"),
+
+                            )
                         call.respondRedirect("/utenti/$id")
                     }
+
                     "delete" -> {
                         call.respondText(if (dao.delete(id)) "succes" else "failed")
                     }

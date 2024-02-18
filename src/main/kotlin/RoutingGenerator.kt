@@ -7,10 +7,10 @@ class RoutingGenerator(
     private val tableName: String,
     private val attributes: Array<Attribute>,
     private val references: Array<Reference>,
-    private val primaryKey: Attribute = Attribute("id", DataType.INTEGER)
+    private val primaryKey: Attribute = Attribute("id", INTEGER)
 ) {
     private val path = tableName.lowercase(Locale.getDefault())
-    private val pkType = primaryKey.type.kotlinType
+    private val pkType = primaryKey.type.kotlin
 
     fun generateClassContent(): String {
         return """
@@ -75,8 +75,8 @@ fun Application.$path() {
         attributes.forEach { (name, type) ->
             str.append("$name = formParameters.getOrFail(\"$name\")${if (type != STRING) ".to$pkType()" else ""}, \n\t\t")
         }
-        references.forEach { (attribute, reference) ->
-            str.append("${attribute.name} = formParameters.getOrFail(\"${attribute.name}\")${if (attribute.type != STRING) ".to$pkType()" else ""}, \n\t\t")
+        references.forEach { (name, type, _) ->
+            str.append("$name = formParameters.getOrFail(\"${name}\")${if (type != STRING) ".to$pkType()" else ""}, \n\t\t")
         }
         return str.toString()
     }

@@ -1,5 +1,25 @@
-enum class DataType(var exposedType: String, val kotlinType: String) {
-    STRING("varchar", "String"),
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+
+/**
+ * Currently supported Types are:
+ * string (default "varchar(0)", better call varchar function)
+ * integer
+ * short
+ * long
+ * float
+ * double
+ * bool
+ * char
+ * date
+ * time
+ * datetime
+ * timestamp
+ * duration
+ */
+enum class DataType(var exposed: String, val kotlin: String) {
+    STRING("varchar(0)", "String"),
     INTEGER("integer", "Int"),
     SHORT("short", "Short"),
     LONG("long", "Long"),
@@ -10,12 +30,19 @@ enum class DataType(var exposedType: String, val kotlinType: String) {
     DATE("date", "java.time.LocalDate"),
     DATETIME("datetime", "java.time.LocalDateTime"),
     TIMESTAMP("timestamp", "java.sql.Timestamp"),
+    NONE("null", "null"),
     DURATION("duration", "java.time.Duration");
 
     companion object {
-        fun varchar(length: Int): DataType {
-            STRING.exposedType = "varchar($length)"
+        private fun varchar(length: Int): DataType {
+            STRING.exposed = "varchar($length)"
             return STRING
+        }
+
+        fun fromExposedType(exposedType: String): DataType {
+            return entries.find { it.exposed == exposedType.toLower() } ?: varchar(
+                exposedType.replace("varchar(", "").replace(")", "").toInt()
+            )
         }
     }
 }
@@ -25,8 +52,8 @@ enum class DataType(var exposedType: String, val kotlinType: String) {
  * for example Reference(name = "example", type = DataType.INTEGER)
  */
 data class Attribute(
-    val name: String,
-    val type: DataType,
+    val name: String = "",
+    val type: DataType = DataType.NONE,
 )
 
 /**
@@ -41,13 +68,44 @@ infix fun String.to(type: DataType): Attribute {
  * for example Reference(name = "idExample", type = DataType.INTEGER, reference = "Examples.id")
  */
 data class Reference(
-    val attribute: Attribute,
-    val referece: String
+    val name: String = "",
+    val type: DataType = DataType.NONE,
+    val reference: String = ""
 )
 
-/**
- * enables the triple "to" assign
- */
-infix fun Attribute.to(reference: String): Reference {
-    return Reference(this, reference)
+data class TableInfo(
+    val dataClassName: String = "",
+    val tableName: String = "",
+    val attributes: Array<Attribute> = emptyArray(),
+    val references: Array<Reference> = emptyArray(),
+    val primaryKey: Attribute = Attribute()
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TableInfo
+
+        if (dataClassName != other.dataClassName) return false
+        if (tableName != other.tableName) return false
+        if (!attributes.contentEquals(other.attributes)) return false
+        if (!references.contentEquals(other.references)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = dataClassName.hashCode()
+        result = 31 * result + tableName.hashCode()
+        result = 31 * result + attributes.contentHashCode()
+        result = 31 * result + references.contentHashCode()
+        return result
+    }
+}
+
+class DataTypeDeserializer : JsonDeserializer<DataType>() {
+    override fun deserialize(p: JsonParser, ctxt: DeserializationContext?): DataType {
+        val value = p.text.trim()
+        return DataType.fromExposedType(value)
+    }
 }
