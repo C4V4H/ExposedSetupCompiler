@@ -9,7 +9,10 @@ Ideally, given a JSON file, this project will "compile" it, creating three types
 2. One with the implementation of the interface (DAOFacadeImpl).
 3. Lastly, one that handles the routing for that entity.
 
-Example Of given JSON file:
+## Usage
+First you need a Ktor project, you can create it [here](https://kmp.jetbrains.com/) 
+then you need to create a json file contaning an Array of TableInfo, you can fund the class in the Constants.kt file
+so the given JSON file should look like this:
 
     [
       {
@@ -54,6 +57,6 @@ Example Of given JSON file:
        }
     ]
 
-How to Compile the json:
+finally you can Compile the json:
 
     DAOCompiler("org/example").build("path/to/file.json")
